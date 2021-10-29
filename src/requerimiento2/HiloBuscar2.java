@@ -49,8 +49,9 @@ public class HiloBuscar2 implements Runnable{
 			byte[] mensaje = new byte[100];
 			entrada.read(mensaje);
 			peticion = new String(mensaje).trim(); //Hay que eliminar los elementos vacíos
-			boolean encontrado = false;
-
+			boolean encontrado = false; //Indica si se ha encontrado algún elemento
+			
+			//Comprobamos el primer carácter que es el que contiene el código de petición
 			switch(peticion.charAt(0)) {
 				case '1':
 					String isbn = peticion.substring(1);

@@ -15,10 +15,13 @@ import java.util.Scanner;
  * Presenta al usuario un menú y le solicita que seleccione una opcion
  * entre las mostradas.
  * 
- * @author Jorge SAlor
+ * @author Adrian. Antonio, Jorge.
  *
  */
 public class ClienteLibros2 {
+	
+	public static final int PUERTO = 9999;
+	public static final String IP_SERVER = "localhost";
 	
 	public static void main (String[] args) {
 		
@@ -44,33 +47,36 @@ public class ClienteLibros2 {
 			catch(InputMismatchException e) {
 				//Tratamos el error
 				opcion = 0; //Inicializamos la opción
-				sc.next(); //Para limpiar el buffer
 			}
 			finally {
+				sc.nextLine();//Limpiamos el buffer
 				//Comprobamos la opcion seleccionada
 				switch(opcion) {
 					case 1: //Búsqueda por ISBN
+						//Solo devuelve un Libro
 						System.out.println("Esciba el ISBN:");
-						String isbn = sc.next();
+						String isbn = sc.nextLine();
 						peticion = String.valueOf(opcion)+isbn; 
 						
-						enviarPeticion(peticion,"localhost",9999);  
+						enviarPeticion(peticion, IP_SERVER, PUERTO);  
 						break;
 						
 					case 2: //Búsqueda por Título
+						//Solo devuelve un Libro
 						System.out.println("Esciba el Título:");
-						String titulo = sc.next();
+						String titulo = sc.nextLine();
 						peticion = String.valueOf(opcion)+titulo; 
 						
-						enviarPeticion(peticion,"localhost",9999);
+						enviarPeticion(peticion, IP_SERVER, PUERTO);
 						break;
 						
-					case 3:
+					case 3: //Búsqueda por autor
+						//Puede devolver varios Libros
 						System.out.println("Esciba el Autor:");
-						String autor = sc.next();
+						String autor = sc.nextLine();
 						peticion = String.valueOf(opcion)+autor; 
 						
-						enviarPeticion(peticion,"localhost",9999);
+						enviarPeticion(peticion, IP_SERVER, PUERTO);
 						break;
 						
 					case 4:
@@ -79,7 +85,7 @@ public class ClienteLibros2 {
 						break;
 						
 					default: //Opción no válida
-						System.out.println("Opción no válida. Introduzca un número entre 1 y 3");
+						System.out.println("Opción no válida. Introduzca un número entre 1 y 4");
 				}
 			}
 		}
@@ -96,8 +102,8 @@ public class ClienteLibros2 {
 	 * @param puerto - El número de puerto en el que escucha el servidor
 	 */
 	public static void enviarPeticion(String peticion, String servidor, int puerto) {
-		try {
-			Socket cliente = new Socket();
+		try (Socket cliente = new Socket();){
+			
 			InetSocketAddress direccionServidor = new InetSocketAddress(servidor,puerto);
 			System.out.println("Esperando a que el servidor acepte la conexión");
 
@@ -125,7 +131,9 @@ public class ClienteLibros2 {
 			 *  //Leemos
 			 *  String mensaje = bf.readLine();
 			 *  
-			 */ 
+			 */
+			//InputStream y OutputStream son flujos de bytes
+			//Se escriben y se leen bytes -> Hay que transformarlos
 			InputStream entrada = cliente.getInputStream();
 			OutputStream salida = cliente.getOutputStream();
 			
@@ -135,11 +143,15 @@ public class ClienteLibros2 {
 			//Esperamos la respuesta del Server
 			System.out.println("Esperando respuesta ...... ");
 			String respuesta = new String();
+			//Como podemos recibir múltiples libros hacemos un bucle de escucha
+			//Leeremos del buffer hasta que recibamos la palabra FIN por parte
+			//del servidor que indica que ya no tenemos más datos que recibir
 			boolean continua = true;
 			while(continua) {
 				byte[] mensaje = new byte[100];
 				entrada.read(mensaje);
 				String aux = new String(mensaje).trim();
+				//Comprobamos si hemos recibido FIN
 				if(aux.equals("FIN")) {
 					continua = false;
 				}
@@ -147,14 +159,10 @@ public class ClienteLibros2 {
 					respuesta = respuesta.concat("\n"+aux);
 				}
 			}
+			//Mostramos la respuesta
 			System.out.println("Servidor responde: " + respuesta);
-
-			entrada.close();
-			salida.close();
-			cliente.close();
-			
 			System.out.println("Comunicación cerrada");
-			
+		//Excepciones	
 		} catch (UnknownHostException e) {
 			System.out.println("No se puede establecer comunicación con el servidor");
 			System.out.println(e.getMessage());

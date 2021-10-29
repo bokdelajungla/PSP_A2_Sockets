@@ -1,5 +1,17 @@
 package requerimiento1;
 
+/**
+ * <p>Clase que contiene la información de un Libro.
+ * <p>Se sobreesciben:
+ * <ul>	<li> - toString(): Devuelve los datos del libro en varias líneas
+ * para que sea más fácil de leer.
+ * 		<li> - equals(): Un objeto de la clase libro se considerará igual a otro
+ * cuando tengan el mismo ISBN.
+ * 		<li> - hashCode(): Dos objetos tendrán el mismo hash si su ISBN es el mismo.
+ * @author Adrian, Antonio, Jorge. 
+ *
+ */
+
 public class Libro {
 	
 	//Atributos

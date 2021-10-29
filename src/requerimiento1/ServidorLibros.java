@@ -2,15 +2,29 @@ package requerimiento1;
 
 import java.util.HashSet;
 import java.net.ServerSocket;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
+/**
+ * <p>Clase que implementa un servidor concurrente cuya direccion es {@link #IP_SERVER} y acepta peticiones de
+ * los clientes en el puerto {@link #PUERTO}
+ * <p>Cada vez que recibe una petición de conexión crea un hilo que se encargará de comunicarse con el
+ * cliente y vuelve a esperar conexiones de nuevos clientes.
+ * 
+ * @author Adrián, Antonio, Jorge.
+ *
+ */
 public class ServidorLibros {
+	
+	//Dirección del Servidor
+	public static final String IP_SERVER = "localhost";
+	public static final int PUERTO = 9999;
 	
 	public static void main(String[] args) {
 		
 		//Creamos la coleccion
-		//Usamos un HashSet para 
+		//Usamos un HashSet para controlar la unicidad de los elementos
 		HashSet<Libro> Biblioteca = new HashSet<Libro>();
 		//Creamos 5 Libros:
 		//El ISBN debe cumplir unas reglas, como empezar por 978 o 979, tener varios
@@ -28,12 +42,10 @@ public class ServidorLibros {
 		Biblioteca.add(libro004);
 		Biblioteca.add(libro005);
 		
-		
-		try {
+		//Creamos el socket de escucha:
+		try(ServerSocket servidor = new ServerSocket();) {
 			System.out.println("Iniciando el Servidor...");
-			//Creamos el socket de escucha:
-			ServerSocket servidor = new ServerSocket();
-			InetSocketAddress direccion = new InetSocketAddress("localhost",9999);
+			InetSocketAddress direccion = new InetSocketAddress(IP_SERVER,PUERTO);
 			servidor.bind(direccion);
 			
 			//Bucle de escucha:
@@ -43,10 +55,16 @@ public class ServidorLibros {
 				System.out.println("Peticion de cliente recibida. Lanzando Hilo");
 				new HiloBuscar(socketEscucha, Biblioteca);
 			}
-			
-		}catch(Exception e) {
-			System.out.println(e.getMessage());
-		}
 		
+		// Excepción de E/S	
+		}catch (IOException e) {
+			System.out.println("SERVIDOR: Error de E/S");
+			e.printStackTrace();  
+
+		// Captura de otros tipos de excepciones no especificadas
+		} catch (Exception e) {
+			System.out.println("SERVIDOR: Error -> " + e);
+			e.printStackTrace();
+		}	
 	}
 }

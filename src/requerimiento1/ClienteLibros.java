@@ -10,14 +10,18 @@ import java.util.Scanner;
 
 
 /**
- * Aplicación del cliente de la Actividad 2 de PSP de Sockets
- * Presenta al usuario un menú y le solicita que seleccione una opcion
+ * <p>Aplicación del cliente de la Actividad 2 de PSP de Sockets
+ * <p>Presenta al usuario un menú y le solicita que seleccione una opcion
  * entre las mostradas.
+ * <p>Dependiendo de la opción seleccionada envía al servidor una cadena de texto diferente
  * 
- * @author Jorge SAlor
+ * @author Adrian. Antonio, Jorge.
  *
  */
 public class ClienteLibros {
+	
+	public static final int PUERTO = 9999;
+	public static final String IP_SERVER = "localhost";
 	
 	public static void main (String[] args) {
 		
@@ -42,25 +46,25 @@ public class ClienteLibros {
 			catch(InputMismatchException e) {
 				//Tratamos el error
 				opcion = 0; //Inicializamos la opción
-				sc.next(); //Para limpiar el buffer
 			}
 			finally {
+				sc.nextLine();//Limpiamos el buffer
 				//Comprobamos la opcion seleccionada
 				switch(opcion) {
 					case 1: //Búsqueda por ISBN
 						System.out.println("Esciba el ISBN:");
-						String isbn = sc.next();
+						String isbn = sc.nextLine();
 						peticion = String.valueOf(opcion)+isbn; 
 						
-						enviarPeticion(peticion,"localhost",9999);  
+						enviarPeticion(peticion, IP_SERVER, PUERTO);  
 						break;
 						
 					case 2: //Búsqueda por Título
 						System.out.println("Esciba el Título:");
-						String titulo = sc.next();
+						String titulo = sc.nextLine();
 						peticion = String.valueOf(opcion)+titulo; 
 						
-						enviarPeticion(peticion,"localhost",9999);
+						enviarPeticion(peticion, IP_SERVER, PUERTO);
 						break;
 						
 					case 3: //Salir
@@ -86,8 +90,8 @@ public class ClienteLibros {
 	 * @param puerto - El número de puerto en el que escucha el servidor
 	 */
 	public static void enviarPeticion(String peticion, String servidor, int puerto) {
-		try {
-			Socket cliente = new Socket();
+		try (Socket cliente = new Socket();){
+			
 			InetSocketAddress direccionServidor = new InetSocketAddress(servidor,puerto);
 			System.out.println("Esperando a que el servidor acepte la conexión");
 
@@ -99,19 +103,18 @@ public class ClienteLibros {
 			InputStream entrada = cliente.getInputStream();
 			OutputStream salida = cliente.getOutputStream();
 			
-			
+			//Enviamos la petición:
 			salida.write(peticion.getBytes());
+			
+			//Esperamos la respuesta del Server
 			byte[] mensaje = new byte[100];
 			System.out.println("Esperando respuesta ...... ");
 			entrada.read(mensaje);
+			
+			//Mostramos la respuesta
 			System.out.println("Servidor responde: " + new String(mensaje));
-
-			entrada.close();
-			salida.close();
-			cliente.close();
-			
 			System.out.println("Comunicación cerrada");
-			
+		//Excepciones	
 		} catch (UnknownHostException e) {
 			System.out.println("No se puede establecer comunicación con el servidor");
 			System.out.println(e.getMessage());
